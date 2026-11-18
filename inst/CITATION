@@ -1,0 +1,10 @@
+citHeader("Aby zacytowac pakiet KaskadaR, uzyj ponizszego opisu.")
+
+bibentry(
+  bibtype  = "Manual",
+  title    = "KaskadaR: Ocena Rankingu w Modelu Kaskadowym",
+  author   = person("Eryk", "Tomaszek"),
+  year     = "2027",
+  note     = "Wersja 0.0.0.9000",
+  url      = "https://github.com/eryktomaszek/KaskadaR"
+)
