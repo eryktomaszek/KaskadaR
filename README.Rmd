@@ -1,0 +1,256 @@
+---
+output: github_document
+---
+
+<!-- README.md powstaje z README.Rmd. Zmiany wprowadza się w README.Rmd,
+a następnie renderuje plik poleceniem devtools::build_readme(). -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  fig.width = 7,
+  fig.height = 4,
+  dpi = 110
+)
+```
+
+# KaskadaR
+
+[![R-CMD-check](https://github.com/eryktomaszek/KaskadaR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/eryktomaszek/KaskadaR/actions/workflows/R-CMD-check.yaml)
+
+Pakiet języka R do oceny rankingu wyników wyszukiwania miarą Expected
+Reciprocal Rank (ERR) w modelu kaskadowym (Chapelle i in., 2009). Model
+kaskadowy zakłada, że użytkownik przegląda wyniki po kolei i kończy
+poszukiwanie na pierwszym dokumencie, który go satysfakcjonuje. Pakiet zwraca
+wartość miary wraz z pełnym profilem zatrzymania: prawdopodobieństwem
+satysfakcji na każdej pozycji, rozkładem pozycji pierwszego zatrzymania
+i masą użytkowników, którzy nie zakończyli poszukiwania w ocenianej części
+listy.
+
+Projekt dyplomowy na kierunku elektroniczne przetwarzanie informacji,
+Instytut Studiów Informacyjnych Uniwersytetu Jagiellońskiego. Promotor:
+dr Marek Deja.
+
+## Problem badawczy
+
+Użytkownik, który znajduje bardzo dobry dokument na początku listy, często
+kończy poszukiwanie. Trafność dokumentów na dalszych pozycjach ma wtedy
+mniejsze znaczenie, ponieważ część użytkowników do nich nie dociera. Miary sumujące niezależne wkłady
+pozycji przypisują trafnemu dokumentowi na pozycji piątej ten sam wkład
+niezależnie od zawartości pozycji od pierwszej do czwartej.
+
+Miara ERR wiąże wkład pozycji z wcześniejszymi wynikami. Prawdopodobieństwo
+dotarcia do pozycji maleje z każdym trafnym dokumentem powyżej niej, więc
+ranking z jednym bardzo trafnym dokumentem na początku listy otrzymuje
+wysoką ocenę także przy przeciętnej reszcie listy. Model stałej kontynuacji
+z miary Rank-Biased Precision (Moffat i Zobel, 2008) opisuje inne zachowanie:
+użytkownik przechodzi do kolejnej pozycji ze stałym prawdopodobieństwem,
+niezależnym od trafności obejrzanych dokumentów.
+
+Pakiet służy do sprawdzenia, jak założenie o zatrzymaniu po pierwszej
+satysfakcji zmienia ocenę systemów. Pełny profil zatrzymania pokazuje,
+z których pozycji pochodzi wartość miary i jaka część użytkowników pozostaje
+bez satysfakcjonującego wyniku w pierwszych $k$ pozycjach.
+
+## Metoda
+
+Ranking jest listą dokumentów ze stopniami trafności
+$g_1, \ldots, g_k$ na skali $0, \ldots, g_{\max}$. Maksimum skali
+$g_{\max}$ jest parametrem definicji ocen, wspólnym dla wszystkich
+porównywanych systemów.
+
+**Satysfakcja.** Prawdopodobieństwo, że dokument na pozycji $i$
+satysfakcjonuje użytkownika, wynosi
+
+$$
+R_i = \frac{2^{g_i} - 1}{2^{g_{\max}}}.
+$$
+
+Wzór przekształca stopień trafności w prawdopodobieństwo. Dokument
+nietrafny ($g_i = 0$) ma $R_i = 0$, a dokument o najwyższym stopniu ma
+$R_i = 1 - 2^{-g_{\max}}$, więc nawet najlepszy dokument nie zatrzymuje
+każdego użytkownika. Dla ocen binarnych ($g_{\max} = 1$) dokument trafny
+zatrzymuje użytkownika z prawdopodobieństwem 0,5.
+
+**Pierwsze zatrzymanie.** Bezwarunkowe prawdopodobieństwo, że użytkownik
+zatrzyma się po raz pierwszy na pozycji $i$, wynosi
+
+$$
+q_i = R_i \prod_{j=1}^{i-1} \left(1 - R_j\right).
+$$
+
+Iloczyn opisuje prawdopodobieństwo dotarcia do pozycji $i$, czyli braku
+satysfakcji na wszystkich wcześniejszych pozycjach. Wektor
+$(q_1, \ldots, q_k)$ jest profilem zatrzymania zwracanym przez pakiet.
+
+**Miara ERR.** Oczekiwana odwrotność pozycji pierwszego zatrzymania
+w pierwszych $k$ pozycjach wynosi
+
+$$
+\operatorname{ERR}@k = \sum_{i=1}^{k} \frac{q_i}{i}.
+$$
+
+Użytkownik, który nie zatrzymał się w pierwszych $k$ pozycjach, wnosi do
+miary zero. Jego masa
+
+$$
+q_{\text{dalej}} = \prod_{j=1}^{k} \left(1 - R_j\right)
+$$
+
+spełnia warunek $\sum_{i=1}^{k} q_i + q_{\text{dalej}} = 1$, sprawdzany
+w diagnostyce każdego wyniku.
+
+**Średnia pozycja zatrzymania.** Pakiet zwraca także średnią pozycję
+zatrzymania warunkowo względem zatrzymania w pierwszych $k$ pozycjach:
+
+$$
+\operatorname{E}\left[I \mid I \le k\right] =
+\frac{\sum_{i=1}^{k} i \, q_i}{1 - q_{\text{dalej}}}.
+$$
+
+Średnia warunkowa opisuje wyłącznie użytkowników zatrzymanych w ocenianej
+części listy. Gdy żaden dokument nie jest trafny, mianownik jest zerowy,
+a pakiet zwraca `NA` ze statusem `brak_zatrzymania`.
+
+**Obliczenie.** Funkcja `oblicz_err()` wyznacza skumulowany iloczyn
+dopełnień w jednym przejściu po liście, w czasie $O(k)$. Prawdopodobieństwo
+satysfakcji jest liczone w postaci $2^{g_i - g_{\max}} - 2^{-g_{\max}}$,
+a dopełnienie w postaci $(1 - 2^{g_i - g_{\max}}) + 2^{-g_{\max}}$. Obie
+postacie dają poprawne wartości także dla bardzo dużego maksimum skali,
+przy którym bezpośrednie potęgi $2^{g_{\max}}$ przekraczają zakres liczb
+zmiennoprzecinkowych.
+
+## Procedura generowania danych
+
+Funkcja `generuj_rankingi()` tworzy dane o znanych stopniach trafności. Dla
+zapytania $z$ i dokumentu $d$ stopień jest losowany niezależnie:
+
+$$
+g_{zd} \sim \operatorname{Kategoryczny}(\pi), \qquad
+\pi = (0{,}5;\ 0{,}2;\ 0{,}15;\ 0{,}1;\ 0{,}05),
+$$
+
+co daje skalę $0, \ldots, 4$ z przewagą dokumentów nietrafnych. System
+o parametrze $\sigma$ porządkuje dokumenty zapytania malejąco według wyniku
+
+$$
+s^{(\sigma)}_{zd} = g_{zd} + \varepsilon_{zd}, \qquad
+\varepsilon_{zd} \sim N\!\left(0, \sigma^2\right).
+$$
+
+Domyślnie powstają trzy systemy, $\sigma \in \{0{,}5;\ 1;\ 3\}$, dla 100
+zapytań i 50 dokumentów (ziarno 202713). Mniejsze $\sigma$ daje ranking
+bliższy idealnemu, w którym dokumenty są uporządkowane malejąco według
+stopnia. Pełne stopnie są prawdą konstrukcyjną: dla każdego rankingu znany
+jest dokładny profil zatrzymania, a ranking idealny wyznacza najwyższą
+osiągalną wartość ERR dla zapytania.
+
+Funkcja `symuluj_uzytkownikow()` odtwarza model kaskadowy na poziomie
+pojedynczych użytkowników. Użytkownik $u$ losuje
+$U_{ui} \sim \operatorname{U}(0, 1)$ na kolejnych pozycjach i zatrzymuje się na
+pozycji $I_u = \min\{i : U_{ui} < R_i\}$. Średnia
+
+$$
+\widehat{\operatorname{ERR}} = \frac{1}{n} \sum_{u=1}^{n}
+\frac{\mathbf{1}(I_u \le k)}{I_u}
+$$
+
+estymuje ERR@k z błędem standardowym rzędu $n^{-1/2}$, a empiryczny rozkład
+$I_u$ estymuje wektor $q$. Zgodność symulacji ze wzorem jest testem modelu,
+niezależnym od implementacji wzoru.
+
+## Instalacja
+
+```r
+# install.packages("remotes")
+remotes::install_github("eryktomaszek/KaskadaR")
+```
+
+## Przykład
+
+Ranking dwóch dokumentów o stopniach 2 i 1 na skali 0..2:
+
+```{r przyklad}
+library(KaskadaR)
+
+wynik <- oblicz_err(c(2, 1), maksimum = 2)
+wynik
+```
+
+Profil zatrzymania pokazuje wkład każdej pozycji do miary:
+
+```{r profil}
+profil_zatrzymania(c(2, 1, 0, 2), maksimum = 2)
+```
+
+Porównanie trzech systemów na danych przykładowych (20 zapytań, ocena do
+głębokości 10):
+
+```{r porownanie}
+porownanie <- porownaj_err(rankingi_przyklad, oceny_przyklad,
+                           maksimum = 4, k = 10)
+porownanie
+```
+
+```{r wykres-porownania, fig.alt = "Wykres pudełkowy ERR@10 po zapytaniach dla trzech systemów"}
+plot(porownanie)
+```
+
+Kontrola modelu symulacją 10 000 użytkowników:
+
+```{r symulacja}
+symuluj_uzytkownikow(c(2, 1, 0, 2), maksimum = 2, n = 10000)
+```
+
+## Struktura pakietu
+
+| Plik | Zawartość |
+|---|---|
+| `R/skala.R` | prawdopodobieństwo satysfakcji w postaci stabilnej, przygotowanie stopni do głębokości $k$ |
+| `R/err.R` | `oblicz_err()`, `profil_zatrzymania()`, `porownaj_err()` |
+| `R/symulacja.R` | `symuluj_uzytkownikow()` |
+| `R/generator.R` | `generuj_rankingi()` |
+| `R/metody_s3.R` | metody `print()`, `summary()` i `plot()` klas `wynik_err`, `porownanie_err`, `symulacja_err` |
+| `R/dane.R` | dokumentacja zbiorów `oceny_przyklad` i `rankingi_przyklad` |
+| `data-raw/generuj_dane.R` | skrypt tworzący zbiory przykładowe |
+| `tests/testthat/` | testy analityczne, testy własności, kontrola symulacją, kontrakt błędów |
+| `vignettes/` | poradnik oraz strony serwisu: algorytm i nota o serwisie |
+
+## Weryfikacja
+
+Testy pakietu mają trzy warstwy. **Przypadki analityczne** porównują wynik
+z wartościami policzonymi ręcznie ze wzorów, z rachunkiem zapisanym
+w komentarzu testu: dla skali 0..2 i rankingu (2, 1) wektor satysfakcji
+wynosi (0,75; 0,25), profil zatrzymania (0,75; 0,0625), ERR = 0,78125,
+masa niezatrzymania 0,1875, a średnia pozycja warunkowa 14/13. **Testy
+własności** sprawdzają warunki niezależne od danych: sumę mas zatrzymania
+równą 1, zgodność z niezależną rekurencją, brak spadku ERR po dopisaniu
+pozycji lub podniesieniu stopnia, maksimum ERR dla rankingu idealnego oraz
+poprawność obliczenia przy maksimum skali równym 2000. **Kontrola
+symulacją** wymaga zgodności średniej z symulacji z wartością ze wzoru
+w granicach czterech błędów standardowych.
+
+Testy kontraktu błędów opisują reakcję na dane spoza dziedziny metody:
+stopnie spoza skali, braki i niepoprawne maksimum skali.
+
+```r
+devtools::test()
+devtools::check()
+```
+
+## Literatura
+
+Chapelle, O., Metzler, D., Zhang, Y., Grinspan, P. (2009). Expected
+reciprocal rank for graded relevance. *Proceedings of the 18th ACM
+Conference on Information and Knowledge Management*, 621–630.
+<https://doi.org/10.1145/1645953.1646033>
+
+Moffat, A., Zobel, J. (2008). Rank-biased precision for measurement of
+retrieval effectiveness. *ACM Transactions on Information Systems*, 27(1),
+1–27. <https://doi.org/10.1145/1416950.1416952>
+
+## Licencja
+
+GPL-3.

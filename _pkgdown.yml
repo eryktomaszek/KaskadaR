@@ -13,7 +13,8 @@ home:
   title: Ocena rankingu w modelu kaskadowym
   description: >
     Pakiet języka R do oceny rankingu wyników wyszukiwania miarą Expected
-    Reciprocal Rank w modelu kaskadowym. Projekt w budowie.
+    Reciprocal Rank w modelu kaskadowym, z pełnym profilem zatrzymania
+    użytkownika.
 
 navbar:
   structure:
@@ -52,31 +53,28 @@ articles:
       - articles/o-serwisie
 
 reference:
-  - title: Przygotowanie danych
-    desc: Od surowej ramki danych do macierzy decyzyjnej.
+  - title: Miara ERR
+    desc: Expected Reciprocal Rank i profil zatrzymania dla jednego rankingu.
     contents:
-      - przygotuj_dane
-      - rozbierz_model
-      - skaluj_min_max
-  - title: Wagi kryteriów
-    desc: Metody obiektywne, wyznaczane z samych danych.
+      - oblicz_err
+      - profil_zatrzymania
+      - metody_wynik_err
+  - title: Porównanie systemów
+    desc: Miara po zapytaniach i średnie systemów.
     contents:
-      - oblicz_wagi_entropia
-      - oblicz_wagi_std
-  - title: Ranking
-    desc: Silnik obliczeniowy i obiekt wyniku.
+      - porownaj_err
+      - metody_porownanie_err
+  - title: Kontrola modelu
+    desc: Symulacja użytkowników modelu kaskadowego.
     contents:
-      - oblicz_ranking
-      - print.ranking_epi
-      - summary.ranking_epi
-      - print.macierz_decyzyjna
-  - title: Wizualizacja
-    contents:
-      - plot.ranking_epi
-      - wykres_udzialow
+      - symuluj_uzytkownikow
+      - metody_symulacja_err
   - title: Dane
+    desc: Procedura generowania danych o znanych stopniach trafności i zbiory przykładowe.
     contents:
-      - dane_przykladowe
+      - generuj_rankingi
+      - oceny_przyklad
+      - rankingi_przyklad
   - title: Pakiet
     contents:
       - KaskadaR-package

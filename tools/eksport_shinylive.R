@@ -6,12 +6,15 @@
 # Uruchomienie z katalogu glownego pakietu:
 #     Rscript tools/eksport_shinylive.R
 #
-# Uwaga o rozmiarze. Eksport wazy okolo stu megabajtow, bo zawiera cale
-# srodowisko R skompilowane do postaci uruchamialnej w przegladarce. Katalogu
-# docs nie wysylamy do repozytorium: kazda przebudowa dokladalaby do historii
-# kolejna kopie tej samej wagi, a historii Gita nie da sie potem zmniejszyc.
-# Strone publikuje przeplyw pracy w katalogu .github/workflows, ktory buduje ja
-# przy kazdej zmianie i wysyla na osobna galaz.
+# Eksport wazy okolo stu megabajtow, bo zawiera cale srodowisko R skompilowane
+# do postaci uruchamialnej w przegladarce. Katalog docs nie trafia do
+# repozytorium: strone buduje i publikuje przeplyw pracy
+# .github/workflows/strona.yaml.
+#
+# Aplikacja w przegladarce nie ma zainstalowanego pakietu, dlatego skrypt
+# kopiuje obok pliku app.R wszystkie pliki z katalogu R oraz zbiory danych
+# zapisane w formacie RDS. Aplikacja wczytuje je poleceniem source() i readRDS()
+# (wzor: szablon SzablonR z materialow seminarium, inst/shiny-app/app.R).
 
 if (!requireNamespace("shinylive", quietly = TRUE)) {
   stop("Zainstaluj pakiet shinylive: install.packages(\"shinylive\")",
@@ -21,37 +24,28 @@ if (!requireNamespace("shinylive", quietly = TRUE)) {
 KATALOG_APLIKACJI <- "inst/shiny-app"
 KATALOG_DOCELOWY  <- file.path("docs", "app")
 
-if (!dir.exists(KATALOG_APLIKACJI)) {
-  stop("Nie znaleziono katalogu ", KATALOG_APLIKACJI, call. = FALSE)
+if (!file.exists(file.path(KATALOG_APLIKACJI, "app.R"))) {
+  stop("Brak pliku ", file.path(KATALOG_APLIKACJI, "app.R"), call. = FALSE)
 }
 
-# Aplikacja uruchamiana w przegladarce nie ma zainstalowanego pakietu, wiec
-# potrzebuje kopii plikow z katalogu R oraz danych w formacie czytanym bez
-# mechanizmu lazy loading.
 tymczasowy <- tempfile("aplikacja-")
 dir.create(tymczasowy, recursive = TRUE)
 on.exit(unlink(tymczasowy, recursive = TRUE, force = TRUE), add = TRUE)
 
-file.copy(file.path(KATALOG_APLIKACJI, "app.R"), tymczasowy)
+file.copy(list.files(KATALOG_APLIKACJI, full.names = TRUE), tymczasowy,
+          recursive = TRUE)
 
-pliki_r <- c("przygotowanie_danych.R", "wagi.R", "ranking.R",
-             "klasy_s3.R", "wizualizacja.R")
-for (plik in pliki_r) {
-  zrodlo <- file.path("R", plik)
-  if (!file.exists(zrodlo)) {
-    stop("Brak pliku ", zrodlo, " wymaganego przez aplikacje.", call. = FALSE)
+pliki_r <- list.files("R", pattern = "[.]R$", full.names = TRUE)
+file.copy(pliki_r, tymczasowy)
+
+for (plik in list.files("data", pattern = "[.]rda$", full.names = TRUE)) {
+  srodowisko <- new.env()
+  nazwy <- load(plik, envir = srodowisko)
+  for (nazwa in nazwy) {
+    saveRDS(get(nazwa, envir = srodowisko),
+            file.path(tymczasowy, paste0(nazwa, ".rds")))
   }
-  file.copy(zrodlo, file.path(tymczasowy, plik))
 }
-
-if (!file.exists("data/dane_przykladowe.rda")) {
-  stop("Brak zbioru danych. Uruchom najpierw data-raw/generuj_dane.R",
-       call. = FALSE)
-}
-srodowisko <- new.env()
-load("data/dane_przykladowe.rda", envir = srodowisko)
-saveRDS(srodowisko$dane_przykladowe,
-        file.path(tymczasowy, "dane_przykladowe.rds"))
 
 if (dir.exists(KATALOG_DOCELOWY)) {
   unlink(KATALOG_DOCELOWY, recursive = TRUE, force = TRUE)

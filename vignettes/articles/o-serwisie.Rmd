@@ -2,11 +2,10 @@
 title: "O serwisie"
 ---
 
-> Autorem niniejszego serwisu jest **[imię i nazwisko]**. Serwis ten stanowi
+> Autorem niniejszego serwisu jest **Eryk Tomaszek**. Serwis ten stanowi
 > integralną część pracy licencjackiej (kierunek: elektroniczne przetwarzanie
-> informacji), przygotowanej pod kierunkiem **[tytuł, imię i nazwisko
-> promotora]** na Wydziale Zarządzania i Komunikacji Społecznej Uniwersytetu
-> Jagiellońskiego.
+> informacji), przygotowanej pod kierunkiem **dr. Marka Dei** na Wydziale
+> Zarządzania i Komunikacji Społecznej Uniwersytetu Jagiellońskiego.
 
 Nota powyżej jest wymagana Załącznikiem nr 2 do *Standardów prac dyplomowych
 na kierunku elektroniczne przetwarzanie informacji*. Ta sama treść musi znaleźć
@@ -15,14 +14,15 @@ się w aneksie pracy pisemnej.
 ## Czym jest ten serwis
 
 Serwis udostępnia narzędzie badawcze powstałe jako projekt dyplomowy: pakiet
-języka R implementujący procedurę porządkowania alternatyw według wielu
-kryteriów. Składa się z trzech części.
+języka R do oceny rankingu wyników wyszukiwania miarą Expected Reciprocal
+Rank w modelu kaskadowym. Składa się z trzech części.
 
 Zakładka **Algorytm** opisuje metodę: wzory, założenia, granice stosowalności
 i sposób weryfikacji poprawności, wraz z cytowaniami literatury.
 
-Zakładka **Poradnik** prowadzi przez pełną ścieżkę analizy od surowych danych
-do rankingu.
+Zakładka **Poradnik** prowadzi przez pełną ścieżkę analizy: od ocen
+trafności i rankingów, przez porównanie systemów, po profil zatrzymania
+i kontrolę modelu symulacją.
 
 Zakładka **Aplikacja** pozwala uruchomić narzędzie bez instalowania czegokolwiek.
 Obliczenia wykonują się w przeglądarce; dane nie są nigdzie wysyłane.
@@ -53,7 +53,7 @@ w repozytorium; nie pochodzą od żadnych osób ani instytucji.
 
 ## Kontakt
 
-**[imię i nazwisko]**, [adres poczty elektronicznej]
+**Eryk Tomaszek**, eryk.tomaszek@student.uj.edu.pl
 
 Instytut Studiów Informacyjnych, Wydział Zarządzania i Komunikacji Społecznej,
 Uniwersytet Jagielloński.
