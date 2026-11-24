@@ -1,0 +1,23 @@
+test_that("metody wyniku ERR dzialaja i zwracaja obiekty", {
+  w <- oblicz_err(c(2, 1, 0, 2), maksimum = 2)
+  expect_output(print(w), "ERR@4")
+  s <- summary(w)
+  expect_s3_class(s, "summary.wynik_err")
+  expect_equal(sum(s$profil$wklad), w$err)
+  expect_output(print(s), "suma kontrolna")
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  expect_length(plot(w), 5)
+})
+
+test_that("metody porownania i symulacji dzialaja", {
+  p <- porownaj_err(rankingi_przyklad, oceny_przyklad, maksimum = 4)
+  expect_output(print(p), "sigma_0.5")
+  expect_s3_class(summary(p), "data.frame")
+  sym <- symuluj_uzytkownikow(c(2, 1), maksimum = 2, n = 200)
+  expect_output(print(sym), "ERR ze wzoru")
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off(), add = TRUE)
+  expect_type(plot(p), "list")
+  expect_true(is.matrix(plot(sym)))
+})
