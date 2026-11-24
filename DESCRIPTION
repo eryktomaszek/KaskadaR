@@ -1,29 +1,32 @@
 Package: KaskadaR
 Type: Package
 Title: Ocena Rankingu w Modelu Kaskadowym
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: c(
-    person(
-      given = "Eryk",
-      family = "Tomaszek",
-      email = "eryk.tomaszek@student.uj.edu.pl",
-      role = c("aut", "cre")
-    )
+    person("Eryk", "Tomaszek",
+           email = "eryk.tomaszek@student.uj.edu.pl",
+           role = c("aut", "cre")),
+    person("Marek", "Deja", role = "ths",
+           comment = c(ORCID = "0000-0003-0015-2322"))
   )
-Description: Projekt dyplomowy w budowie: narzedzie do oceny rankingu wynikow
-    wyszukiwania miara Expected Reciprocal Rank w modelu kaskadowym
-    (Chapelle i in. 2009) <doi:10.1145/1645953.1646033>. Obecna wersja zawiera
-    szkielet pakietu z seminarium licencjackiego EPI, zastepowany modul po module
-    wlasna implementacja metody.
+Description: Wyznacza miare Expected Reciprocal Rank w modelu kaskadowym
+    zachowania uzytkownika (Chapelle i in. 2009) <doi:10.1145/1645953.1646033>
+    wraz z pelnym profilem zatrzymania: prawdopodobienstwem satysfakcji na
+    kazdej pozycji, rozkladem pozycji pierwszego zatrzymania i masa
+    uzytkownikow, ktorzy nie zakonczyli poszukiwania w ocenianej czesci
+    listy. Zawiera porownanie systemow po zapytaniach, symulacje uzytkownikow
+    do kontroli modelu oraz procedure generowania rankingow o znanych
+    stopniach trafnosci.
 License: GPL-3
 Encoding: UTF-8
+Language: pl
 LazyData: true
 Depends:
     R (>= 4.1)
 Imports:
-    ggplot2,
+    graphics,
     stats,
-    utils
+    withr
 Suggests:
     knitr,
     rmarkdown,
@@ -31,5 +34,6 @@ Suggests:
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3
-URL: https://github.com/eryktomaszek/KaskadaR
+URL: https://github.com/eryktomaszek/KaskadaR,
+    https://eryktomaszek.github.io/KaskadaR/
 BugReports: https://github.com/eryktomaszek/KaskadaR/issues

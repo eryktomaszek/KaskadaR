@@ -1,33 +1,41 @@
-#' Przykladowy zbior ocen alternatyw
+#' Przykladowe oceny trafnosci
 #'
-#' Zbior wygenerowany procedura o znanej strukturze zaleznosci, opisana
-#' w pliku \code{data-raw/generuj_dane.R}. Kazda z szesciu alternatyw ma ukryta
-#' jakosc malejaca od A do F, a zmienne surowe powstaja jako funkcje tej
-#' jakosci powiekszone o szum. Poprawnie dzialajacy ranking powinien odtworzyc
-#' kolejnosc liter, wiec odchylenie od niej wskazuje na blad implementacji.
+#' Stopnie trafnosci dokumentow dla 20 zapytan, po 20 dokumentow na
+#' zapytanie, na skali 0..4. Zbior wygenerowany funkcja
+#' \code{\link{generuj_rankingi}} w skrypcie \code{data-raw/generuj_dane.R}.
 #'
-#' Zbior zawiera kontrolowane zanieczyszczenia: wartosc 999 w kolumnie
-#' \code{jakosc_ux} odpowiada bledowi wprowadzania danych, a braki w kolumnie
-#' \code{eko_odpady} pominietym odpowiedziom. Oba przypadki sluza do sprawdzania
-#' odpornosci funkcji przygotowujacej dane.
-#'
-#' @format Ramka danych o 120 wierszach i 10 zmiennych:
+#' @format Ramka danych o 400 wierszach i 3 zmiennych:
 #' \describe{
-#'   \item{alternatywa}{Oznaczenie alternatywy, od A do F}
-#'   \item{ekspert}{Numer oceniajacego w obrebie alternatywy}
-#'   \item{koszt_surowce}{Koszt surowcow, rozklad log-normalny}
-#'   \item{koszt_praca}{Koszt robocizny, rozklad log-normalny}
-#'   \item{jakosc_trwalosc}{Ocena trwalosci w skali od 1 do 5}
-#'   \item{jakosc_ux}{Ocena wygody uzytkowania w skali od 1 do 5; zawiera kod 999}
-#'   \item{dostawa_czas}{Sredni czas dostawy w dniach}
-#'   \item{dostawa_niezawodnosc}{Odsetek dostaw terminowych}
-#'   \item{eko_co2}{Ocena emisji w skali od 1 do 7}
-#'   \item{eko_odpady}{Ocena gospodarki odpadami w skali od 1 do 7; zawiera braki}
+#'   \item{zapytanie}{identyfikator zapytania}
+#'   \item{dokument}{identyfikator dokumentu}
+#'   \item{stopien}{stopien trafnosci, liczba calkowita od 0 do 4}
 #' }
 #'
 #' @source Dane symulowane, \code{data-raw/generuj_dane.R}.
 #'
 #' @examples
-#' summary(dane_przykladowe$koszt_surowce)
-#' table(dane_przykladowe$alternatywa)
-"dane_przykladowe"
+#' table(oceny_przyklad$stopien)
+"oceny_przyklad"
+
+
+#' Przykladowe rankingi trzech systemow
+#'
+#' Rankingi dokumentow z \code{\link{oceny_przyklad}} wytworzone przez trzy
+#' systemy o roznym poziomie szumu (\eqn{\sigma} rowne 0,5, 1 i 3). Zbior
+#' wygenerowany funkcja \code{\link{generuj_rankingi}} w skrypcie
+#' \code{data-raw/generuj_dane.R}.
+#'
+#' @format Ramka danych o 1200 wierszach i 4 zmiennych:
+#' \describe{
+#'   \item{system}{oznaczenie systemu: \code{sigma_0.5}, \code{sigma_1},
+#'     \code{sigma_3}}
+#'   \item{zapytanie}{identyfikator zapytania}
+#'   \item{dokument}{identyfikator dokumentu}
+#'   \item{pozycja}{pozycja dokumentu w rankingu systemu dla zapytania}
+#' }
+#'
+#' @source Dane symulowane, \code{data-raw/generuj_dane.R}.
+#'
+#' @examples
+#' head(rankingi_przyklad)
+"rankingi_przyklad"
